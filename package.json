@@ -1,0 +1,25 @@
+{
+  "name": "graphql1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "cross-env NODE_ENV=development nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wametsol/fsosa8.git"
+  },
+  "author": "Waltteri Metsola",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wametsol/fsosa8/issues"
+  },
+  "homepage": "https://github.com/wametsol/fsosa8#readme",
+  "dependencies": {
+    "apollo-server": "^2.11.0",
+    "graphql": "^14.6.0"
+  }
+}
