@@ -131,7 +131,6 @@ const resolvers = {
         bookCount: (root, args) => books.length,
         authorCount: () => authors.length,
         allBooks: (root, args) => {
-            console.log(args)
             var authorBooks = books
             if(args.author) authorBooks = authorBooks.filter(p => p.author === args.author)
             if(args.genre) authorBooks = authorBooks.filter(p => p.genres.includes(args.genre))
@@ -146,13 +145,13 @@ const resolvers = {
         addBook: (root, args) => {
             const book = { ...args, id: uuid() }
             books = books.concat(book)
-            if(!authors.includes(book.author)){
+            if(authors.find(p => p.name === book.author).length == 0){
+                console.log('Kirjailijaa ei ole, lisätään se!')
                 const newAuthor = {
                     name: book.author,
                     id: uuid()
                 }       
                 authors = authors.concat(newAuthor)
-                console.log(authors)
             }
             return book
         },
