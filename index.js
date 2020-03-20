@@ -1,4 +1,5 @@
-const { ApolloServer, UserInputError, gql } = require('apollo-server')
+const { ApolloServer, UserInputError, gql, PubSub } = require('apollo-server')
+const pubsub = new PubSub()
 require('dotenv').config()
 const mongoose = require('mongoose')
 const Author = require('./src/models/author')
@@ -168,20 +169,20 @@ const typeDefs = gql`
           setBornTo: Int!
       ): Author
   }
+  type Subscription {
+    bookAdded: Book!
+  }
 `
 
 const resolvers = {
     Query: {
-        bookCount: () => Book.collection.countDocuments(),
-        authorCount: () => Author.collection.countDocuments(),
+        bookCount: () => {
+          return Book.collection.countDocuments()
+        },
+        authorCount: () => {
+          Author.collection.countDocuments()
+        },
         allBooks: (root, args) => {
-          /*
-            var authorBooks = books
-            if(args.author) authorBooks = authorBooks.filter(p => p.author === args.author)
-            if(args.genre) authorBooks = authorBooks.filter(p => p.genres.includes(args.genre))
-            return authorBooks
-            */
-           console.log(args)
            if(args.genre) return Book.find({genres: { $in: args.genre } })
            return Book.find({})
         },
@@ -193,7 +194,9 @@ const resolvers = {
         }
     },
     Author: {
-      bookCount: async (root) =>(await Book.find({author: root.id})).length
+      bookCount: async (root) => {
+        return (await Book.find({author: root.id})).length
+      }
     },
     Book: {
       author: async (root) => await Author.findById(root.author)
@@ -250,6 +253,7 @@ const resolvers = {
             invalidArgs: args,
           })
         }
+        pubsub.publish('BOOK_ADDED', {bookAdded: book})
         return book
       },
       addAuthor: (root, args) => {
@@ -276,7 +280,12 @@ const resolvers = {
         }
         return author
       }
-    }
+    },
+    Subscription: {
+      bookAdded:{
+        subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+      },
+    },
 
 }
 
@@ -296,6 +305,7 @@ const server = new ApolloServer({
   }
 })
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })
